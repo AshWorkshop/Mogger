@@ -10,6 +10,7 @@ from .constants import *
 class Log(BaseModel):
     t: float            # 日志时间戳
     l: int              # 日志级别
+    ln: str             # 日志级别名称
     o: Dict[str, Any]   # 日志内容
 
 class LogInDB(Log):
@@ -47,8 +48,6 @@ class Logger(object):
         if self.capped:
             try:
                 collcetion = db.create_collection(self.collectionName, capped=True, size=self.size)
-                collcetion.create_index('t')
-                collcetion.create_index('l')
             except pymongo.errors.CollectionInvalid:
                 return db[self.collectionName]
             else:
@@ -71,6 +70,7 @@ class Logger(object):
             c.insert_one({
                 't': time.time(),
                 'l': level,
+                'ln': self.getLevelName(level),
                 'o': data
             })
 
