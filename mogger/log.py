@@ -1,6 +1,6 @@
 import pymongo
 import bson
-import time
+import datetime
 
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
@@ -8,10 +8,11 @@ from typing import Dict, Any, Optional
 from .constants import *
 
 class Log(BaseModel):
-    t: float            # 日志时间戳
-    l: int              # 日志级别
-    ln: str             # 日志级别名称
-    o: Dict[str, Any]   # 日志内容
+    t: float                 # 日志时间戳
+    l: int                   # 日志级别
+    ln: str                  # 日志级别名称
+    time: datetime.datetime  # 日志时间
+    o: Dict[str, Any]        # 日志内容
 
 class LogInDB(Log):
     _id: bson.ObjectId  # oid
@@ -67,10 +68,12 @@ class Logger(object):
 
         c = self.getLogCollection()
         if self.getLevelName(level) is not None and level >= self.level:
+            now = datetime.datetime.utcnow()
             c.insert_one({
-                't': time.time(),
+                't': now.timestamp(),
                 'l': level,
                 'ln': self.getLevelName(level),
+                'time': now,
                 'o': data
             })
 
